@@ -18,13 +18,17 @@ tag = sensortag.SensorTag(SENSORTAG_MAC)
 tag.IRtemperature.enable()
 tag.accelerometer.enable()
 
-distance = 0
+arduino_readings = {
+    'distance': 0,
+    'flame': 0
+}
 
 
 def worker():
-    global distance
     while True:
-        distance = int(ultrasound.readline().strip())
+        reading = ultrasound.readline().strip()
+        fields = reading.decode().split(':')
+        arduino_readings[fields[0]] = int(fields[1])
 
 
 thread = threading.Thread(target=worker)
@@ -41,7 +45,8 @@ while True:
             'y': accelerometer[1],
             'z': accelerometer[2]
         },
-        'distance': distance,
+        'distance': arduino_readings['distance'],
+        'flame': arduino_readings['flame'],
         'temperature': {
             'ambient': temperature[0],
             'target': temperature[1]
